@@ -1,0 +1,426 @@
+{
+  "name": "AI whatApp Lead Qualifier Youtube Video",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -64
+      ],
+      "id": "9f249031-4ed3-490c-8a12-a0c28c12cf07",
+      "name": "WhatsApp Trigger",
+      "webhookId": "d2660803-205f-441f-982e-61c7b85663c8",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "wPhZcOoAgjutrEHi",
+          "name": "WhatsApp OAuth account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=You are an AI virtual assistant for a dental clinic. Your primary responsibilities are handling patient inquiries, providing detailed information about services, pricing, special offers, and booking appointments efficiently. You also update a Google Sheet in real time with appointment details.\n\nCapabilities & Guidelines\n\n1. Answering Questions:\n\nProvide clear, accurate information about all dental services:\n\nCleaning: $50–$80 per session\n\nFillings: $80–$150 per tooth\n\nBraces: $2,500–$5,000\n\nTeeth Whitening: $150–$300\n\nImplants: $1,500–$3,000 per tooth\n\nShare current promotions and offers (e.g., “20% off on cleaning this month”).\n\nExplain procedures in simple, patient-friendly language.\n\nClarify insurance coverage, payment options (cash, card, financing), or packages if asked.\n\n2. Booking Appointments & Qualifying Leads:\n\nCollect:\nFull name\nContact number \nEmail\nService required\nDate\nTime\nAny previous dental issues or allergies (optional but helpful)\n\nCheck availability in the Google Sheet and confirm or suggest alternatives.\n\nConfirm patient understanding of pricing and payment options.\n\nUpdate the Google Sheet immediately after booking with columns:\n\ncustomer, phone, service, date, time, notes\n\nQualify leads:\n\nAsk if this is the patient’s first visit.\n\nIdentify urgent needs (pain, infection, emergency).\n\nSuggest relevant services or promotions based on answers.\n\n3. Managing Appointments:\n\nModify or cancel appointments upon request and update Google Sheet.\n\nSend reminders or follow-ups if instructed.\n\nTone & Approach\n\nProfessional, polite, friendly, and concise.\n\nAvoid unnecessary technical explanations unless requested.\n\nReassure patients and guide them through the booking process efficiently.\n\n4. Google Sheet Integration\n\nAlways confirm details after updating.\n\nUse {{ $now }} for the current date/time of the booking."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "5c7e9c1c-d8c9-48e5-b049-ab160cbb2f53",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        112
+      ],
+      "id": "8f62171a-be5b-4b16-b5bd-26ac6db973f8",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "EHvxMOIksgK15XQH",
+          "name": "Google Gemini(PaLM) Api account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "777252735473744",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        352,
+        -64
+      ],
+      "id": "ebf2b6c0-a484-43bc-b8f0-2c89c5fd08b2",
+      "name": "Send message",
+      "webhookId": "0a00e790-2979-4001-9f6f-2dacad17ae6d",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PkRF6J8u0G7fmcPk",
+          "name": "WhatsApp account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16cWm66yMXTAX6pdnScD2UYC4AYx-TZwz7PMdyw_axFI",
+          "mode": "list",
+          "cachedResultName": "N8N Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16cWm66yMXTAX6pdnScD2UYC4AYx-TZwz7PMdyw_axFI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16cWm66yMXTAX6pdnScD2UYC4AYx-TZwz7PMdyw_axFI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Full_name', ``, 'string') }}",
+            "Contact number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Contact_number', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+            "Service required": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Service_required', ``, 'string') }}",
+            "Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Date', ``, 'string') }}",
+            "Time": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Time', ``, 'string') }}",
+            "WhatsApp Number": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full name",
+              "displayName": "Full name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contact number",
+              "displayName": "Contact number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service required",
+              "displayName": "Service required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "WhatsApp Number",
+              "displayName": "WhatsApp Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        336,
+        96
+      ],
+      "id": "e02698bf-32f9-406b-a483-0e966ff1c30a",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VzcV0v51lcgLgmXX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "16cWm66yMXTAX6pdnScD2UYC4AYx-TZwz7PMdyw_axFI",
+          "mode": "list",
+          "cachedResultName": "N8N Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16cWm66yMXTAX6pdnScD2UYC4AYx-TZwz7PMdyw_axFI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16cWm66yMXTAX6pdnScD2UYC4AYx-TZwz7PMdyw_axFI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "WhatsApp Number": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+            "Full name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Full_name', ``, 'string') }}",
+            "Contact number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Contact_number', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+            "Service required": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Service_required', ``, 'string') }}",
+            "Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Date', ``, 'string') }}",
+            "Time": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Time', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "WhatsApp Number"
+          ],
+          "schema": [
+            {
+              "id": "Full name",
+              "displayName": "Full name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contact number",
+              "displayName": "Contact number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service required",
+              "displayName": "Service required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "WhatsApp Number",
+              "displayName": "WhatsApp Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        112
+      ],
+      "id": "22b7c9d0-1931-479f-ade4-0cabf4a245f1",
+      "name": "Update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VzcV0v51lcgLgmXX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        112
+      ],
+      "id": "716ccbbb-d639-4c9a-9058-cf76623c94a1",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "16884de7-ab7a-4b2f-a839-ffc9ceeae788",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "05454d9d6de57f44a858dfcd87947df58d385d2de41ecb759aa18557ccc1e316"
+  },
+  "id": "nBbGIzBlZN69fZIv",
+  "tags": []
+}
