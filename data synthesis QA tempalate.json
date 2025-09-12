@@ -1,0 +1,408 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// https://community.n8n.io/t/iterating-over-email-attachments/13588/3\nlet results = [];\n\nfor (const item of $input.all()) {\n  for (key of Object.keys(item.binary)) {\n        results.push({\n            json: {},\n            binary: {\n                data: item.binary[key],\n            }\n        });\n    }\n}\n\nreturn results;"
+      },
+      "id": "f45033cc-bbfc-4ab4-b240-4dae45ede905",
+      "name": "Iterate over the documents",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        416,
+        128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "formTitle": "Document Uploader",
+        "formDescription": "Upload your document to generate QA dataset for LLM",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload Document",
+              "fieldType": "file",
+              "acceptFileTypes": "pdf"
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        144,
+        112
+      ],
+      "id": "e9268f82-31f0-48e7-8e5d-f9a2cdc8c536",
+      "name": "On form submission1",
+      "webhookId": "dd3a98e9-9f4b-40bc-a0d8-df30fea520b3"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "=data"
+      },
+      "id": "a9568533-a61d-4639-bcc3-7186f3f39a11",
+      "name": "Read PDF",
+      "type": "n8n-nodes-base.readPDF",
+      "position": [
+        176,
+        368
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f2306385-ae09-4016-bc4b-1ff0ce64ea1a",
+              "name": "text",
+              "value": "={{ $json.text.split('\\n') }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2a3b93c0-faa3-41ac-a518-20d2e44f809a",
+      "name": "Chunk Text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        416,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "returnBinary",
+        "completionTitle": "Finished",
+        "completionMessage": "The data genrated with success",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        576,
+        1008
+      ],
+      "id": "255034eb-b107-42d7-a164-3a0de699e1f9",
+      "name": "Form",
+      "webhookId": "c266811a-b65b-4e2a-8d3a-95a94d30c0fb"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {
+          "format": true
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        1008
+      ],
+      "id": "cd4bdc60-9675-4f85-af2a-3ad0c5462bfe",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Contextuel text:\n{{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert data curator assisting a machine learning engineer in creating a high-quality instruction tuning dataset. \nYour task is to transform the provided text chunk into diverse question and answer (Q&A) pairs \nthat will be used to fine-tune a language model.\n\nFor each entry, generate one or two well-structured questions \nthat reflect different aspects of the information in the chunk. \nEnsure variety across themes such as facts, explanations, comparisons, causes/consequences, and interpretations. \nInclude a mix of short factual questions (1-2 sentences) and longer analytical or interpretive questions (up to 3-4 sentences). \nEach Q&A pair should be concise, accurate, and informative, capturing key insights from the text.\n\nStructure your output in JSON format, where each object contains 'question' and 'answer' fields. \nThe JSON structure should look like this:\n\n    \"question\": \"Your question here...\",\n    \"answer\": \"Your answer here...\"\n\nGuidelines:\n- Keep the questions grounded in the provided text (dates, events, facts, concepts, themes).  \n- Answers should be neutral, factual, and aligned with reliable information.  \n- Encourage diversity in perspective (e.g., different stakeholders, causes vs. effects, theory vs. practice).  \n- Avoid speculation unless clearly marked (e.g., \"Some experts suggest that…\").  \n- Do not include sensitive modern biases or irrelevant content.  \n\n\nBy following these guidelines, you'll create a robust dataset that helps train a model to understand and explain content clearly and accurately."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        928,
+        640
+      ],
+      "id": "1845aa70-1cc1-4864-a0d9-2ed537c069a4",
+      "name": "AI Agent",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"question\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"answer\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t\t\n\t}\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1040,
+        864
+      ],
+      "id": "f038601f-ddf5-4b00-9a56-03ac85facf8e",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3deba9cf-8d89-490d-a1fe-4411c55e83b9",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "05b38c9e-521e-4875-b502-6b5b90253081",
+      "name": "Chunk Text1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        144,
+        992
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        880,
+        864
+      ],
+      "id": "007e2d0c-b1ad-4654-8c70-6076a8bc12d5",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GabtFWEmR17xSvXM",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": "=1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        384,
+        624
+      ],
+      "id": "6945c3e7-a27d-48a1-98f8-1fe957f006dc",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        640
+      ],
+      "id": "1f233fb3-619c-4d00-89af-b67a1197d817",
+      "name": "Wait",
+      "webhookId": "9cc035b6-5265-4023-9298-a7d5c81794f3"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        624,
+        368
+      ],
+      "id": "40428276-0620-487d-8901-6dc8d2f80f58",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        1024
+      ],
+      "id": "0a7d5f88-30a1-4d9c-bd4a-4b7c12b7d73e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GabtFWEmR17xSvXM",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Iterate over the documents": {
+      "main": [
+        [
+          {
+            "node": "Read PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission1": {
+      "main": [
+        [
+          {
+            "node": "Iterate over the documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read PDF": {
+      "main": [
+        [
+          {
+            "node": "Chunk Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk Text": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk Text1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Chunk Text1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "32f1e504138089280842809583afa49dc6964d22ab27b8ce2a5d8146480fe491"
+  }
+}
