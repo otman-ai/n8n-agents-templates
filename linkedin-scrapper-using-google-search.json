@@ -1,0 +1,829 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "38094df7-09be-4215-8ae4-0dd1e0ac1031",
+              "name": "nextStartIndex",
+              "value": 1,
+              "type": "number"
+            },
+            {
+              "id": "32f42d80-2f71-4f59-bebe-0a791108cd9f",
+              "name": "q",
+              "value": "={{ $json.Query }} in {{ $json.Country }} site:linkedin.com{{ $if($json.Type==\"Company\",\"/company\", \"/in\") }}",
+              "type": "string"
+            },
+            {
+              "id": "023a2fb4-922a-4245-9736-5e817273f35d",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -64,
+        -16
+      ],
+      "id": "f894ab09-2653-4d10-9d47-3b6208befd4f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "<YOUR_KEY>"
+            },
+            {
+              "name": "cx",
+              "value": "<YOUR_CTX>"
+            },
+            {
+              "name": "q",
+              "value": "={{ $('Edit Fields').all()[0].json.q }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.nextStartIndex }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        240
+      ],
+      "id": "79e8b895-8f9e-4037-82e1-ff3d43ef9547",
+      "name": "HTTP Request",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  if (item.json.items && Array.isArray(item.json.items)) {\n    for (const searchResult of item.json.items) {\n      // Extract name from title (assumes format like \"Name - Position | Company\")\n      const titleParts = searchResult.title.split(' - ');\n      const name = titleParts[0] || 'Unknown';\n      \n      // Extract position (everything after the dash but before pipe if exists)\n      let position = '';\n      if (titleParts.length > 1) {\n        const positionPart = titleParts[1].split(' | ')[0];\n        position = positionPart || '';\n      }\n      \n      // Profile URL\n      const profileUrl = searchResult.link || '';\n      \n      // About section from snippet\n      const about = searchResult.snippet || '';\n      \n      // Image if available\n      const image = searchResult.pagemap?.cse_image?.[0]?.src || '';\n      \n      results.push({\n        name: name.trim(),\n        position: position.trim(),\n        profileUrl: profileUrl,\n        about: about,\n        image: image,\n        startIndex: item.json.queries?.nextPage?.[0]?.startIndex || null,\n        hasMoreResults: item.json.queries?.nextPage ? true : false\n      });\n    }\n  }\n}\n\nreturn results.map(result => ({ json: result }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        240
+      ],
+      "id": "3801ad37-7c90-4b61-afb4-1fb3987aefda",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6dea66e3-d347-4d83-a422-7e417cfe92d4",
+              "leftValue": "={{ $json.continueLoop }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "20eb1ef0-d967-4364-aad4-2c20e3fc05f9",
+              "leftValue": "={{ $json.nextStartIndex }}",
+              "rightValue": 101,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        352
+      ],
+      "id": "db233a5e-f7e5-4402-879a-41a53aaf1195",
+      "name": "Check if we there is more pages"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nlet continueLoop = false;\nlet nextStartIndex = 1;\n\n// Check if we have results and pagination info\nfor (const item of items) {\n  if (item.json.hasMoreResults && item.json.startIndex) {\n    continueLoop = true;\n    nextStartIndex = item.json.startIndex;\n    break;\n  }\n}\n\nreturn [{\n  json: {\n    continueLoop: continueLoop,\n    nextStartIndex: nextStartIndex\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        352
+      ],
+      "id": "8d19d44f-c36e-48e7-aa61-2bdaa2fd8686",
+      "name": "Get the current Page Index"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1408,
+        400
+      ],
+      "id": "200d201a-3c84-45cf-89fe-b89a7352b470",
+      "name": "Wait",
+      "webhookId": "4304341e-dedf-4802-bbd8-6dd4d717be9b"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1_LknaQGZhFFkKCPzA5Cy9lUyajThHKLQ6HI7p8JsXa0",
+          "mode": "list",
+          "cachedResultName": "Linkedin Companies",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_LknaQGZhFFkKCPzA5Cy9lUyajThHKLQ6HI7p8JsXa0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_LknaQGZhFFkKCPzA5Cy9lUyajThHKLQ6HI7p8JsXa0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $json.name }}",
+            "LinkedIn Link": "={{ $json.profileUrl }}",
+            "Image": "={{ $json.image }}",
+            "Description": "={{ $json.about }}"
+          },
+          "matchingColumns": [
+            "Title"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Link",
+              "displayName": "LinkedIn Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        960,
+        176
+      ],
+      "id": "63a39729-d561-4719-8e30-9ecbad2de289",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ytUkyEivpdNBMQ6x",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Companies\n\nThis scrappe the companies",
+        "height": 448,
+        "width": 1216
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        128
+      ],
+      "id": "ec0fecf4-1c69-4951-ba98-5cc236d23b53",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "formTitle": "LinkedIn scrapper",
+        "formDescription": "Enter the following elements ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Query",
+              "placeholder": "IT head",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Country",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "India"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "People"
+                  },
+                  {
+                    "option": "Company"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -304,
+        -16
+      ],
+      "id": "bfd0e704-5610-4030-9451-a595f47485f8",
+      "name": "On form submission",
+      "webhookId": "f791ab75-b9c1-48a0-ae8b-545cde0e162b"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('On form submission').item.json.Type }}",
+                    "rightValue": "People",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "30ad0371-721a-41b6-8974-fb81a1ca9cc4"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "People"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e8d18780-fb96-47b4-a10c-438eb628b573",
+                    "leftValue": "={{ $('On form submission').item.json.Type }}",
+                    "rightValue": "Company",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Companies"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        144,
+        -16
+      ],
+      "id": "9f0ef2d9-09ec-46b0-8e87-7ceb86e4c94b",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "<YOUR_KEY>"
+            },
+            {
+              "name": "cx",
+              "value": "<YOUR_CTX>"
+            },
+            {
+              "name": "q",
+              "value": "={{ $('Edit Fields').all()[0].json.q }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.nextStartIndex }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        -288
+      ],
+      "id": "dfd6c370-f201-47f4-ba50-e713fbe7b26e",
+      "name": "HTTP Request1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  if (item.json.items && Array.isArray(item.json.items)) {\n    for (const searchResult of item.json.items) {\n      // Extract name from title (assumes format like \"Name - Position | Company\")\n      const titleParts = searchResult.title.split(' - ');\n      const name = titleParts[0] || 'Unknown';\n      \n      // Extract position (everything after the dash but before pipe if exists)\n      let position = '';\n      if (titleParts.length > 1) {\n        const positionPart = titleParts[1].split(' | ')[0];\n        position = positionPart || '';\n      }\n      \n      // Profile URL\n      const profileUrl = searchResult.link || '';\n      \n      // About section from snippet\n      const about = searchResult.snippet || '';\n      \n      // Image if available\n      const image = searchResult.pagemap?.cse_image?.[0]?.src || '';\n      \n      results.push({\n        name: name.trim(),\n        position:position,\n        profileUrl: profileUrl,\n        about: about,\n        image: image,\n        startIndex: item.json.queries?.nextPage?.[0]?.startIndex || null,\n        hasMoreResults: item.json.queries?.nextPage ? true : false\n      });\n    }\n  }\n}\n\nreturn results.map(result => ({ json: result }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -288
+      ],
+      "id": "8f70fd02-1e88-4c74-8645-814b7221f761",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nlet continueLoop = false;\nlet nextStartIndex = 1;\n\n// Check if we have results and pagination info\nfor (const item of items) {\n  if (item.json.hasMoreResults && item.json.startIndex) {\n    continueLoop = true;\n    nextStartIndex = item.json.startIndex;\n    break;\n  }\n}\n\nreturn [{\n  json: {\n    continueLoop: continueLoop,\n    nextStartIndex: nextStartIndex\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        -176
+      ],
+      "id": "e219a403-f334-4db3-bd29-0409bca4f182",
+      "name": "Get the current Page Index2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1ysU6YFrtQ9tsq6Pz6WxGIpcQdU8_IKJ1NJomE0J59yY",
+          "mode": "list",
+          "cachedResultName": "Linkedin People",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ysU6YFrtQ9tsq6Pz6WxGIpcQdU8_IKJ1NJomE0J59yY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ysU6YFrtQ9tsq6Pz6WxGIpcQdU8_IKJ1NJomE0J59yY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "position": "={{ $json.position }}",
+            "profile_url": "={{ $json.profileUrl }}",
+            "about": "={{ $json.about }}",
+            "image": "={{ $json.image }}"
+          },
+          "matchingColumns": [
+            "name"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "position",
+              "displayName": "position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "profile_url",
+              "displayName": "profile_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "about",
+              "displayName": "about",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "image",
+              "displayName": "image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        -320
+      ],
+      "id": "1436cd25-7493-4c3b-9827-0d20f13887ab",
+      "name": "Append or update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ytUkyEivpdNBMQ6x",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## People\n\nThis scrappe the profile of the people\n",
+        "height": 480,
+        "width": 1216
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -384
+      ],
+      "id": "8c5fbb3f-7147-4131-9273-0e5f14e0459b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1488,
+        -112
+      ],
+      "id": "47a76652-f26b-4a88-98df-12935661d994",
+      "name": "Wait2",
+      "webhookId": "4304341e-dedf-4802-bbd8-6dd4d717be9b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6dea66e3-d347-4d83-a422-7e417cfe92d4",
+              "leftValue": "={{ $json.continueLoop }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "20eb1ef0-d967-4364-aad4-2c20e3fc05f9",
+              "leftValue": "={{ $json.nextStartIndex }}",
+              "rightValue": 101,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        -176
+      ],
+      "id": "21f7f6c9-120f-4d8c-aed7-ffc27e658766",
+      "name": "Check if we there is more pages2"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Scrapping Ended",
+        "completionMessage": "We have ended the scrapping, please check your sheets",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        1408,
+        240
+      ],
+      "id": "326c6f71-252c-4010-a2c2-3210bc6fec4b",
+      "name": "Form",
+      "webhookId": "77f0b9f0-4538-4a9f-b387-ea49211332a1"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Scrapping Ended",
+        "completionMessage": "We have ended the scrapping, please check your sheets",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        1488,
+        -272
+      ],
+      "id": "7e7b0d5b-81b4-4843-bf38-0b7f1f05797a",
+      "name": "Form1",
+      "webhookId": "77f0b9f0-4538-4a9f-b387-ea49211332a1"
+    }
+  ],
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Get the current Page Index",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if we there is more pages": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the current Page Index": {
+      "main": [
+        [
+          {
+            "node": "Check if we there is more pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Get the current Page Index2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append or update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the current Page Index2": {
+      "main": [
+        [
+          {
+            "node": "Check if we there is more pages2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if we there is more pages2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Form1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ed0e765e2b1b4e993d756da482bdc369c96205182861df762f53987d55eba16"
+  }
+}
