@@ -1,0 +1,304 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Document information :{{ $json.document.pageContent }}\nUser said:\n{{ $('When chat message received').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "=You are a helpful assistant that answers questions based on the provided document content.\n\nProvide a comprehensive answer based only on the context provided. If the context doesn't contain the information needed to answer the question, simply state \"I don't have enough information to answer this question.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        224
+      ],
+      "id": "0979d192-b87c-494b-8b64-ccafa741d8af",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        },
+        "prompt": "={{ $json.chatInput }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        224
+      ],
+      "id": "5b39c44c-653b-4f40-ad41-80d1eedaafc1",
+      "name": "Query Data Tool"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        16
+      ],
+      "id": "353a8587-2373-40b3-ad94-519bcac19f82",
+      "name": "When chat message received",
+      "webhookId": "9c32f8d1-492e-4139-aa14-0986de4b0bfc"
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        464
+      ],
+      "id": "a30faf2d-2a91-46bb-b684-bb359a1d947b",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "value": "vector_store_key",
+          "mode": "list",
+          "cachedResultName": "vector_store_key"
+        },
+        "clearStore": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        240
+      ],
+      "id": "5731d207-5e92-4e5a-b70f-e788937d805b",
+      "name": "Simple Vector Store"
+    },
+    {
+      "parameters": {
+        "jsCode": "// https://community.n8n.io/t/iterating-over-email-attachments/13588/3\nlet results = [];\n\nfor (const item of $input.all()) {\n  for (key of Object.keys(item.binary)) {\n        results.push({\n            json: {},\n            binary: {\n                data: item.binary[key],\n            }\n        });\n    }\n}\n\nreturn results;"
+      },
+      "id": "967a2075-6738-4795-8589-48f208abe8c8",
+      "name": "Iterate over the documents",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        32,
+        16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "=data"
+      },
+      "id": "8a35c06d-e17b-4777-bf6c-d29701a58824",
+      "name": "Read PDF1",
+      "type": "n8n-nodes-base.readPDF",
+      "position": [
+        -208,
+        256
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "formTitle": "Document Uploader",
+        "formDescription": "Upload your document to process",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload Document",
+              "fieldType": "file",
+              "acceptFileTypes": "pdf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "27d5e80b-4ed0-4638-a3bc-08efe3c5be57",
+      "name": "On form submission",
+      "webhookId": "dd3a98e9-9f4b-40bc-a0d8-df30fea520b3"
+    },
+    {
+      "parameters": {
+        "separator": "\\n",
+        "chunkOverlap": 200
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        608,
+        672
+      ],
+      "id": "e7bf7555-b314-472d-a416-463607bbabe2",
+      "name": "Character Text Splitter"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        592
+      ],
+      "id": "c62d7445-20e8-4a3d-b4c8-ef1327ec4fd9",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GabtFWEmR17xSvXM",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek-r1:1.5b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        432
+      ],
+      "id": "1b6a6888-c3c1-40a4-b010-2c6c22bd85a2",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "XivIYDVlk8gYUYXH",
+          "name": "Ollama account 5"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Query Data Tool": {
+      "ai_tool": [
+        []
+      ],
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Query Data Tool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iterate over the documents": {
+      "main": [
+        [
+          {
+            "node": "Read PDF1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read PDF1": {
+      "main": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Iterate over the documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Query Data Tool",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "32f1e504138089280842809583afa49dc6964d22ab27b8ce2a5d8146480fe491"
+  }
+}
