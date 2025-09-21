@@ -1,0 +1,651 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/<YOUR_ACCOUNT_ID>/media_publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"creation_id\":{{ $json.media_id }}\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        -80
+      ],
+      "id": "da11d718-8f4a-463d-b9aa-1c663746d6bb",
+      "name": "Publish the content",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "p1T5wawacEPLOqmZ",
+          "name": "Bearer Auth account"
+        },
+        "httpHeaderAuth": {
+          "id": "VX4146WE5f7Vdw0W",
+          "name": "Instagram Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"Media type\"] }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "24a9b302-c5d5-496e-b614-fabee3e3ac24"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d2e63c09-09e5-4765-960b-fe587e7d204e",
+                    "leftValue": "={{ $json[\"Media type\"] }}",
+                    "rightValue": "video",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "video"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -128,
+        -80
+      ],
+      "id": "602dd287-e46a-4f82-b551-8aa517ea3306",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/<YOUR_ACCOUNT_ID>/media",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"image_url\":\"{{ $json[\"media url\"] }}\",\n  \"caption\":\"{{ $json[\"Post description\"] }}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        -176
+      ],
+      "id": "b91573e5-42ef-4c25-8adb-08380b0a7fb6",
+      "name": "Upload the Image",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "p1T5wawacEPLOqmZ",
+          "name": "Bearer Auth account"
+        },
+        "httpHeaderAuth": {
+          "id": "VX4146WE5f7Vdw0W",
+          "name": "Instagram Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1XdZH18jz0pmnSl0nGMtvPc4mzR8WLdrbqdLL_VssBOw",
+          "mode": "list",
+          "cachedResultName": "Myposts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XdZH18jz0pmnSl0nGMtvPc4mzR8WLdrbqdLL_VssBOw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XdZH18jz0pmnSl0nGMtvPc4mzR8WLdrbqdLL_VssBOw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "media_id": "={{ $('Append row in sheet').item.json.media_id }}",
+            "status": "PUBLISHED"
+          },
+          "matchingColumns": [
+            "media_id"
+          ],
+          "schema": [
+            {
+              "id": "post description",
+              "displayName": "post description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "media",
+              "displayName": "media",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        -80
+      ],
+      "id": "bb3a3bc0-2081-428c-bfb9-0c0f0114940f",
+      "name": "Update status to PUBLISH",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CA5O6ySWWQrCtc0p",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/<YOUR_CLIENT_ID>/media?media_type=REELS ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"video_url\":\"{{ $json[\"media url\"] }}\",\n  \"caption\":\"{{ $json[\"Post description\"] }}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        48
+      ],
+      "id": "59fa87c5-d093-4c93-af24-f17e000cdab5",
+      "name": "Upload the Video",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "p1T5wawacEPLOqmZ",
+          "name": "Bearer Auth account"
+        },
+        "httpHeaderAuth": {
+          "id": "VX4146WE5f7Vdw0W",
+          "name": "Instagram Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Social media automation",
+        "formDescription": "Add your posts infor",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Post description",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Media type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "image"
+                  },
+                  {
+                    "option": "video"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "media url",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -400,
+        -80
+      ],
+      "id": "e82d8401-363b-4a0c-b8ec-423f70149582",
+      "name": "On form submission",
+      "webhookId": "c7826bb7-8dbf-469d-8506-177e32c91005"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XdZH18jz0pmnSl0nGMtvPc4mzR8WLdrbqdLL_VssBOw",
+          "mode": "list",
+          "cachedResultName": "Myposts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XdZH18jz0pmnSl0nGMtvPc4mzR8WLdrbqdLL_VssBOw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XdZH18jz0pmnSl0nGMtvPc4mzR8WLdrbqdLL_VssBOw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "media_id": "={{ $json.id }}",
+            "post description": "={{ $('On form submission').item.json[\"Post description\"] }}",
+            "media": "={{ $('On form submission').item.json[\"media url\"] }}",
+            "status": "PENDING",
+            "type": "={{ $('On form submission').item.json[\"Media type\"] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "post description",
+              "displayName": "post description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "media",
+              "displayName": "media",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        -80
+      ],
+      "id": "a26c90c2-1643-4e88-ae29-983206c2a434",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CA5O6ySWWQrCtc0p",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Instagram\n",
+        "height": 448,
+        "width": 1344
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        -224
+      ],
+      "id": "4daf90bb-2909-44a6-bc00-c6b502fe4af1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "path": "37f3fc73-d633-4db6-9d36-686689c9acd4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        352
+      ],
+      "id": "47ec0a05-c4e3-4d70-9222-4030b867c4d2",
+      "name": "Webhook",
+      "webhookId": "37f3fc73-d633-4db6-9d36-686689c9acd4"
+    },
+    {
+      "parameters": {
+        "url": "https://graph.instagram.com/access_token",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "ig_exchange_token"
+            },
+            {
+              "name": "client_secret",
+              "value": "<YOUR_CLIENT_SECRET>"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $('Get the short lived token').item.json[\"access_token\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        352
+      ],
+      "id": "1b3a8b4c-3af5-4ec0-be30-4d69754b04e4",
+      "name": "Getting the Long live token"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instagram.com/oauth/access_token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_id",
+              "value": "=<YOUR_CLIENT_ID>"
+            },
+            {
+              "name": "client_secret",
+              "value": "<YOUR_CLIENT_SECRET>"
+            },
+            {
+              "name": "grant_type",
+              "value": "authorization_code"
+            },
+            {
+              "name": "redirect_uri",
+              "value": "<YOUR_REDIRECT_URI>"
+            },
+            {
+              "name": "code",
+              "value": "={{ $('Webhook').item.json[\"query\"][\"code\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -208,
+        352
+      ],
+      "id": "eb315ec5-bb0e-48fc-bbb9-05507f92b6a6",
+      "name": "Get the short lived token"
+    },
+    {
+      "parameters": {
+        "content": "## Get the access token\nMake sure you add the product url of the webhook to the redirect_uri in the developper.facebook.com\n",
+        "height": 336,
+        "width": 832
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        256
+      ],
+      "id": "c22e6f36-bb1c-4ef2-a852-cef9a7d222d0",
+      "name": "Sticky Note1"
+    }
+  ],
+  "connections": {
+    "Publish the content": {
+      "main": [
+        [
+          {
+            "node": "Update status to PUBLISH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Upload the Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload the Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload the Image": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload the Video": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Publish the content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get the short lived token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the short lived token": {
+      "main": [
+        [
+          {
+            "node": "Getting the Long live token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ed0e765e2b1b4e993d756da482bdc369c96205182861df762f53987d55eba16"
+  }
+}
