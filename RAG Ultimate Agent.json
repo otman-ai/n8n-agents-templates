@@ -735,6 +735,20 @@
           "name": "Google Calendar account"
         }
       }
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "# Loop over input items and add a new field called 'my_new_field' to the JSON of each one\nfor item in _items:\n  item[\"json\"][\"output\"] = item[\"json\"][\"output\"].replace(\">\", \"\").replace(\"<\", \"\")\nreturn _items"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        64
+      ],
+      "id": "b3e5b825-90b9-4467-a227-3e7e20233b07",
+      "name": "Code in Python (Native) (Beta)"
     }
   ],
   "connections": {
@@ -860,7 +874,7 @@
       "main": [
         [
           {
-            "node": "Send a text message",
+            "node": "Code in Python (Native) (Beta)",
             "type": "main",
             "index": 0
           }
@@ -915,7 +929,7 @@
       "main": [
         [
           {
-            "node": "Send a text message",
+            "node": "Code in Python (Native) (Beta)",
             "type": "main",
             "index": 0
           }
@@ -1097,14 +1111,25 @@
           }
         ]
       ]
+    },
+    "Code in Python (Native) (Beta)": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {
     "Telegram Trigger": [
       {
-        "update_id": 66690661,
+        "update_id": 66690670,
         "message": {
-          "message_id": 355,
+          "message_id": 374,
           "from": {
             "id": 6200418347,
             "is_bot": false,
@@ -1120,8 +1145,8 @@
             "username": "Josheow",
             "type": "private"
           },
-          "date": 1762360407,
-          "text": "CAN YOU LIST THE CERTIFICATIONS OF THE PERSONE"
+          "date": 1762538162,
+          "text": "list my recent emails"
         }
       }
     ]
