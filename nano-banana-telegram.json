@@ -1,0 +1,280 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        -48
+      ],
+      "id": "effbbb02-5525-4782-a83e-33ca9205c9f6",
+      "name": "Telegram Trigger",
+      "webhookId": "b73ddc4e-bc45-4402-b8c5-18e65dff1cff",
+      "credentials": {
+        "telegramApi": {
+          "id": "QaNTZ4Cb8OemcSEN",
+          "name": "Telegram account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[3].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "f53ea620-789e-47a0-a2f4-8668a4389fb4",
+      "name": "Get a file",
+      "webhookId": "a9cb82bd-57af-49b9-ac7b-d5ed0057b660",
+      "credentials": {
+        "telegramApi": {
+          "id": "QaNTZ4Cb8OemcSEN",
+          "name": "Telegram account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        -48
+      ],
+      "id": "5d6e686a-e2a7-4a68-a74f-4523907eb264",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-goog-api-key",
+              "value": "<YOUR_GOOGLE_API_HERE>"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"'{{ $('Telegram Trigger').item.json.message.caption }}\"\n        },\n        {\n          \"inline_data\": {\n            \"mime_type\": \"image/png\",\n            \"data\": \"{{ $json.data }}\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        400,
+        -48
+      ],
+      "id": "417cf951-92ee-45ba-a360-475d10ba7e4b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fafb226c-18e3-44f1-9348-a73e4fb29fab",
+              "name": "output",
+              "value": "={{ $json.candidates[0].content.parts[0].inlineData.data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -48
+      ],
+      "id": "2e4cd038-77b9-4307-b13b-7ebec7e7ddc1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        -48
+      ],
+      "id": "f29ff00c-b361-4144-a02f-de9e7feadc00",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        -48
+      ],
+      "id": "00290b35-efe7-44a8-b4a0-d57591822fff",
+      "name": "Send a photo message",
+      "webhookId": "67b3df4a-16e8-4991-b2b9-dafe88a5d412",
+      "credentials": {
+        "telegramApi": {
+          "id": "QaNTZ4Cb8OemcSEN",
+          "name": "Telegram account 5"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "update_id": 13466025,
+        "message": {
+          "message_id": 8,
+          "from": {
+            "id": 6200418347,
+            "is_bot": false,
+            "first_name": "AI",
+            "last_name": "Josheow",
+            "username": "Josheow",
+            "language_code": "fr"
+          },
+          "chat": {
+            "id": 6200418347,
+            "first_name": "AI",
+            "last_name": "Josheow",
+            "username": "Josheow",
+            "type": "private"
+          },
+          "date": 1764083309,
+          "photo": [
+            {
+              "file_id": "AgACAgQAAxkBAAMCaSW_SKD5eEL3qmMBiCN73Xw4arUAAnYLaxsMgzFRbGrXP5lQ4dcBAAMCAANzAAM2BA",
+              "file_unique_id": "AQADdgtrGwyDMVF4",
+              "file_size": 1361,
+              "width": 51,
+              "height": 90
+            },
+            {
+              "file_id": "AgACAgQAAxkBAAMCaSW_SKD5eEL3qmMBiCN73Xw4arUAAnYLaxsMgzFRbGrXP5lQ4dcBAAMCAANtAAM2BA",
+              "file_unique_id": "AQADdgtrGwyDMVFy",
+              "file_size": 18201,
+              "width": 180,
+              "height": 320
+            },
+            {
+              "file_id": "AgACAgQAAxkBAAMCaSW_SKD5eEL3qmMBiCN73Xw4arUAAnYLaxsMgzFRbGrXP5lQ4dcBAAMCAAN4AAM2BA",
+              "file_unique_id": "AQADdgtrGwyDMVF9",
+              "file_size": 86818,
+              "width": 450,
+              "height": 800
+            },
+            {
+              "file_id": "AgACAgQAAxkBAAMCaSW_SKD5eEL3qmMBiCN73Xw4arUAAnYLaxsMgzFRbGrXP5lQ4dcBAAMCAAN5AAM2BA",
+              "file_unique_id": "AQADdgtrGwyDMVF-",
+              "file_size": 176186,
+              "width": 720,
+              "height": 1280
+            }
+          ],
+          "caption": "Add Lionel messi next to the persone"
+        }
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "686289cab7d1361cda607b58e3056d890590f89dcad8836c04c7a5e8a674b73b"
+  }
+}
