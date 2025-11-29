@@ -1,0 +1,378 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -432,
+        -96
+      ],
+      "id": "353bd100-a883-4f55-b757-42df6fc6bfd4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aitnqeZ18rNoIeOrl0W4plP81tnbgjwafOin1eeFQwc",
+          "mode": "list",
+          "cachedResultName": "Emails list 3",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aitnqeZ18rNoIeOrl0W4plP81tnbgjwafOin1eeFQwc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2085184953,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aitnqeZ18rNoIeOrl0W4plP81tnbgjwafOin1eeFQwc/edit#gid=2085184953"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "is_sent",
+              "lookupValue": "0"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -208,
+        -96
+      ],
+      "id": "87faff3c-d603-4728-b381-752ac8811525",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4DNGaX1kbknHcb3f",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5421e404-4784-4201-9353-3eec78a86ef9",
+              "name": "email",
+              "value": "={{ $json.Emails }}",
+              "type": "string"
+            },
+            {
+              "id": "bbbdda49-8992-4b58-9c21-235d770b355a",
+              "name": "subject",
+              "value": "<SUBJECT>",
+              "type": "string"
+            },
+            {
+              "id": "28e3d1dd-7d9b-493d-897f-a7ce0be14896",
+              "name": "content",
+              "value": "<CONTENT>",
+              "type": "string"
+            },
+            {
+              "id": "10b5565b-e033-47c6-8c37-d85873533776",
+              "name": "row_idx",
+              "value": "={{ $json.row_number }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        -96
+      ],
+      "id": "b7179cf8-8436-4188-8a8c-264feb36ed1a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "<YOUR_URL>",
+          "mode": "url"
+        },
+        "options": {
+          "binaryPropertyName": "CV"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        240,
+        -160
+      ],
+      "id": "46c135da-0b78-4df2-9d1b-54df1cfac889",
+      "name": "CV",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "tmO7lz0waSiHdPrO",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "<YOUR_URL>",
+          "mode": "url"
+        },
+        "options": {
+          "binaryPropertyName": "letter"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        240,
+        0
+      ],
+      "id": "fce7ede7-67ab-4a60-a184-662a9b26e6c9",
+      "name": "Motivation letter",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "tmO7lz0waSiHdPrO",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        464,
+        -80
+      ],
+      "id": "7d834149-6e5f-4de5-9bee-bd7b5f40af93",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.content }}",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "CV"
+              },
+              {
+                "property": "letter"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        656,
+        -80
+      ],
+      "id": "03c78a5b-6b68-49ee-a4f0-c39ccb2be229",
+      "name": "Send a message",
+      "webhookId": "ad42d853-8bab-4e10-93c2-06264ce1ab14",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KPQstf21zpxLZHPM",
+          "name": "Mehdi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1aitnqeZ18rNoIeOrl0W4plP81tnbgjwafOin1eeFQwc",
+          "mode": "list",
+          "cachedResultName": "Emails list 3",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aitnqeZ18rNoIeOrl0W4plP81tnbgjwafOin1eeFQwc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2085184953,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aitnqeZ18rNoIeOrl0W4plP81tnbgjwafOin1eeFQwc/edit#gid=2085184953"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Merge').item.json.row_idx }}",
+            "is_sent": "1"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Emails",
+              "displayName": "Emails",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "is_sent",
+              "displayName": "is_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        -80
+      ],
+      "id": "a4309303-01cc-4bde-be88-e8ad792635c6",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4DNGaX1kbknHcb3f",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "CV",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Motivation letter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CV": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Motivation letter": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "686289cab7d1361cda607b58e3056d890590f89dcad8836c04c7a5e8a674b73b"
+  }
+}
