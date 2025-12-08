@@ -1,0 +1,525 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1YMbn6UrUOK8YKsdbodWivSJGIatChwMr",
+          "mode": "list",
+          "cachedResultName": "UGC",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1YMbn6UrUOK8YKsdbodWivSJGIatChwMr"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -32
+      ],
+      "id": "5e996ac4-0678-4742-a998-a9156063b312",
+      "name": "Google Drive Trigger",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8mnuw4fqckmYk0x2",
+          "name": "My Drive"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1E0XgreWXP0Ln5ApMICEvJSxTmC3JoQYhXNFzmNPDPHw",
+          "mode": "list",
+          "cachedResultName": "UGC ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E0XgreWXP0Ln5ApMICEvJSxTmC3JoQYhXNFzmNPDPHw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E0XgreWXP0Ln5ApMICEvJSxTmC3JoQYhXNFzmNPDPHw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "pending",
+            "driveID": "={{ $('Download file').item.json.id }}",
+            "title": "={{ $json.content.parts[0].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "driveID",
+              "displayName": "driveID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        -32
+      ],
+      "id": "b190be52-d3dd-4cbd-b566-3397fccf3a2f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pX1yLU4KUNeB8sKq",
+          "name": "Port Sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -32
+      ],
+      "id": "53774b29-da7d-4062-9bc6-407c24d806c1",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "rj0oQ3xdYsOrGywr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -16,
+        -32
+      ],
+      "id": "73a9d2a5-5692-4c2b-9ed9-2c8795f6fc6c",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8mnuw4fqckmYk0x2",
+          "name": "My Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Video script: {{ $json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {
+          "systemMessage": "Generate a social media post based on the following skincare video script. The post should feel authentic, creator-led, and conversational, as if written by the same person speaking in the video. Avoid marketing buzzwords and exaggerated claims. Keep the tone natural, confident, and relatable.\n\nContent context:\nA young woman talks casually on camera while holding a skincare serum, sharing her real experience using it for a few weeks. She mentions smoother, more hydrated skin and liking the lightweight feel.\n\nRequirements:\n\nWrite 1 short caption (2–4 lines max)\n\nCasual but polished language\n\nSuitable for Instagram / TikTok\n\nInclude 2–4 natural hashtags (not spammy)\n\nOptional soft CTA (non-salesy)\n\nOutput format:\nCaption text only, line breaks allowed."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -32
+      ],
+      "id": "c6796c97-8643-435d-85cd-2860d157cb11",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "rj0oQ3xdYsOrGywr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Post Generation\nGet the new uploaded video, transribe it then generate the post",
+        "height": 304,
+        "width": 1088
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -128
+      ],
+      "id": "6c5bb2e8-7508-47cb-b5c8-dfe9bae64b85",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        304
+      ],
+      "id": "6afc8f13-4ef7-43ea-8d4b-df3ab12bb1fb",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1E0XgreWXP0Ln5ApMICEvJSxTmC3JoQYhXNFzmNPDPHw",
+          "mode": "list",
+          "cachedResultName": "UGC ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E0XgreWXP0Ln5ApMICEvJSxTmC3JoQYhXNFzmNPDPHw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E0XgreWXP0Ln5ApMICEvJSxTmC3JoQYhXNFzmNPDPHw/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "pending"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        304
+      ],
+      "id": "e551c854-a02e-4a9f-a2e8-8e8dbad24a52",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pX1yLU4KUNeB8sKq",
+          "name": "Port Sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.driveID }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        176,
+        304
+      ],
+      "id": "0f0c60b9-496b-469c-bfaf-b5305d32af21",
+      "name": "Get Video",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8mnuw4fqckmYk0x2",
+          "name": "Mehdi Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "uploadVideo",
+        "user": "me",
+        "platform": [
+          "instagram"
+        ],
+        "title": "={{ $('Get row(s) in sheet').item.json.title }}",
+        "video": "data",
+        "instagramMediaType": "REELS"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        384,
+        304
+      ],
+      "id": "dd2bbb24-508e-41d5-ba1d-04ba2918baf6",
+      "name": "Upload a video",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "VQoa2enAN6Iox7kI",
+          "name": "Upload Post account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1E0XgreWXP0Ln5ApMICEvJSxTmC3JoQYhXNFzmNPDPHw",
+          "mode": "list",
+          "cachedResultName": "UGC ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E0XgreWXP0Ln5ApMICEvJSxTmC3JoQYhXNFzmNPDPHw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E0XgreWXP0Ln5ApMICEvJSxTmC3JoQYhXNFzmNPDPHw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "status": "done"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "driveID",
+              "displayName": "driveID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        304
+      ],
+      "id": "4e68375c-72b8-42dc-9c4f-285ffcae4354",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pX1yLU4KUNeB8sKq",
+          "name": "Port Sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Publish the video",
+        "height": 320,
+        "width": 1056
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        224
+      ],
+      "id": "26b10136-6c44-4abe-b2f7-c5aaae96b92d",
+      "name": "Sticky Note1"
+    }
+  ],
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Get Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video": {
+      "main": [
+        [
+          {
+            "node": "Upload a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a video": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bca60492606e67bb56468093fc75425ac3d20b14abf07d82bf2394c609c37d26"
+  }
+}
