@@ -266,7 +266,7 @@
     },
     {
       "parameters": {
-        "content": "## Chat with Documents inside Slack\n\nYou can watch this [video](https://youtube.com/ke)",
+        "content": "## Chat with Documents inside Slack\n\nYou can watch [the full video](https://youtu.be/dWg0H1YfYWA)",
         "width": 464
       },
       "type": "n8n-nodes-base.stickyNote",
