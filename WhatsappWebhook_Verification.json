@@ -2,31 +2,39 @@
   "nodes": [
     {
       "parameters": {
-        "path": "228d830f-6001-4995-859d-5b510ed39db3",
-        "responseMode": "responseNode",
-        "options": {}
+        "operation": "send",
+        "phoneNumberId": "688598264340930",
+        "recipientPhoneNumber": "={{ $('Webhook for retrieving the message').item.json.body.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
       },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
       "position": [
-        -160,
-        176
+        96,
+        384
       ],
-      "id": "a420037e-4434-4d05-9444-566004e63f18",
-      "name": "Webhook",
-      "webhookId": "228d830f-6001-4995-859d-5b510ed39db3"
+      "id": "225152ff-97d8-4ac4-81a1-fd16b207c9b8",
+      "name": "Send message and wait for response",
+      "webhookId": "661c4118-b884-4c5e-b5bd-60166cad72d3",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "vbip8g5JmWIFYnEC",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
         "respondWith": "text",
-        "responseBody": "={{ $('Webhook').item.json.query[\"hub.challenge\"] }}",
+        "responseBody": "={{ $('Webhook for verification').item.json.query[\"hub.challenge\"] }}",
         "options": {}
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        528,
-        160
+        384,
+        64
       ],
       "id": "bc670a46-5ec7-4375-84f8-4f9b600d506b",
       "name": "Respond to Webhook"
@@ -44,7 +52,7 @@
             {
               "id": "783d718c-4e5d-457b-9107-274d9e13fd77",
               "leftValue": "={{ $json.verify_token }}",
-              "rightValue": "={{ $('Webhook').item.json.query[\"hub.verify_token\"] }}",
+              "rightValue": "={{ $('Webhook for verification').item.json.query[\"hub.verify_token\"] }}",
               "operator": {
                 "type": "string",
                 "operation": "equals"
@@ -58,8 +66,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        256,
-        176
+        112,
+        80
       ],
       "id": "7077bf2d-6119-4cd4-b48e-ea43513be9af",
       "name": "Check the verify token"
@@ -81,25 +89,100 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        48,
-        176
+        -96,
+        80
       ],
       "id": "ed6de2df-8259-4a73-bffc-36bc04cb4a81",
       "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "path": "228d830f-6001-4995-859d-5b510ed39db3",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        80
+      ],
+      "id": "a420037e-4434-4d05-9444-566004e63f18",
+      "name": "Webhook for verification",
+      "webhookId": "228d830f-6001-4995-859d-5b510ed39db3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "228d830f-6001-4995-859d-5b510ed39db3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        384
+      ],
+      "id": "9756edc6-0457-498f-8d28-f40df7bc59c6",
+      "name": "Webhook for retrieving the message",
+      "webhookId": "8469f9ba-412c-41ff-9841-da1e5187bb97"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5a2a4aeb-5cc7-44ee-8fdf-bd9c8701b0ab",
+              "name": "message",
+              "value": "=Hi, this is test message, you said {{ $json.body.entry[0].changes[0].value.messages[0].text.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -96,
+        384
+      ],
+      "id": "ddc0a176-0d85-445f-8817-ea514df4d260",
+      "name": "Set the message"
+    },
+    {
+      "parameters": {
+        "content": "## Test message\nThis workflow responsible for retrieving the message then answer the reciptant",
+        "height": 304,
+        "width": 704
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        288
+      ],
+      "id": "c638118e-06d1-45db-b63c-e0721f8e5279",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Verification workflow\n\nChnage the 'verfification token' to your own token, then copy the webhook url and past it in Meta configuration whatsappRun this before you hit \"Verify & save\" in Meta webhook",
+        "height": 320,
+        "width": 928,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -48
+      ],
+      "id": "ffc9976e-5816-4824-83eb-51c12ca5afcf",
+      "name": "Sticky Note1"
     }
   ],
   "connections": {
-    "Webhook": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Check the verify token": {
       "main": [
         [
@@ -116,6 +199,39 @@
         [
           {
             "node": "Check the verify token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook for verification": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook for retrieving the message": {
+      "main": [
+        [
+          {
+            "node": "Set the message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set the message": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
             "type": "main",
             "index": 0
           }
