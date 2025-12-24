@@ -5,13 +5,13 @@
         "operation": "send",
         "phoneNumberId": "688598264340930",
         "recipientPhoneNumber": "={{ $('Webhook for retrieving the message').item.json.body.entry[0].changes[0].value.contacts[0].wa_id }}",
-        "textBody": "={{ $json.message }}",
+        "textBody": "={{ $json.text }}",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        96,
+        304,
         384
       ],
       "id": "225152ff-97d8-4ac4-81a1-fd16b207c9b8",
@@ -129,29 +129,6 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "5a2a4aeb-5cc7-44ee-8fdf-bd9c8701b0ab",
-              "name": "message",
-              "value": "=Hi, this is test message, you said {{ $json.body.entry[0].changes[0].value.messages[0].text.body }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -96,
-        384
-      ],
-      "id": "ddc0a176-0d85-445f-8817-ea514df4d260",
-      "name": "Set the message"
-    },
-    {
-      "parameters": {
         "content": "## Test message\nThis workflow responsible for retrieving the message then answer the reciptant",
         "height": 304,
         "width": 704
@@ -180,6 +157,47 @@
       ],
       "id": "ffc9976e-5816-4824-83eb-51c12ca5afcf",
       "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.entry[0].changes[0].value.messages[0].text.body }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You a helpful assistant your job is to help the user, answer very breifly"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -96,
+        384
+      ],
+      "id": "dbf85c40-daa5-4d51-b12e-8f3e30ab5025",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        592
+      ],
+      "id": "6679ef2c-b540-4218-9e01-ecab5d633958",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i8fjVqBdlqh7Hm8E",
+          "name": "PAID TIER"
+        }
+      }
     }
   ],
   "connections": {
@@ -220,19 +238,30 @@
       "main": [
         [
           {
-            "node": "Set the message",
+            "node": "Basic LLM Chain",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Set the message": {
+    "Basic LLM Chain": {
       "main": [
         [
           {
             "node": "Send message and wait for response",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
             "index": 0
           }
         ]
