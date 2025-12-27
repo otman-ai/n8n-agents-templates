@@ -1,0 +1,100 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "transcript"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        272,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.transcript }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful assistant, your job is to generate a recap from the provided meeting transcript, dont start with \"Of couse\", \"here is the reca\" or any sort of things, straight to the point.|NOTES: Use rich text no mardown"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        480,
+        352
+      ],
+      "id": "f55ddb41-3396-425e-8128-695cd6938eb5",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        384,
+        592
+      ],
+      "id": "6fbbe29d-6c10-406f-adcb-623a0ff4cd55",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i8fjVqBdlqh7Hm8E",
+          "name": "PAID TIER"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "transcript": "*   \"Next, we will go ahead and add another HTTP request that fetch the transcription of the entire meeting. So it will be the same.\" (0:00 - 0:16) - Speaker: portfolio otman *   \"Change name to fetch the meeting strong scripts. Add description.\" (0:32 - 0:41) - Speaker: portfolio otman *   \"Add description. Change the method to get a request.\" (0:36 - 0:46) - Speaker: portfolio otman *   \"Add description. Change the method to get a request.\" (0:40 - 0:47) - Speaker: portfolio otman *   \"And for the URL, it will be the same as delete.\" (0:46 - 0:57) - Speaker: portfolio otman *   \"And just make sure you disable this on the body.\" (0:57 - 1:10) - Speaker: portfolio otman *   \"So let's go ahead and execute it.\" (1:10 - 1:22) - Speaker: portfolio otman *   \"So let's go ahead and execute it.\" (1:20 - 1:22) - Speaker: portfolio otman *   \"So I will say get the meeting transcribed, give it down.\" (1:44 - 1:46) - Speaker: portfolio otman",
+        "customerNAME": "Jack"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bca60492606e67bb56468093fc75425ac3d20b14abf07d82bf2394c609c37d26"
+  }
+}
