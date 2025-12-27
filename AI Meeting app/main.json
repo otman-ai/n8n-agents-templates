@@ -220,8 +220,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        944,
-        1040
+        720,
+        656
       ],
       "id": "617842e7-69fd-4fd3-b070-867b837cb00e",
       "name": "Generate meeting recap"
@@ -267,8 +267,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        1168,
-        768
+        1024,
+        656
       ],
       "id": "30359b0f-cdd3-4d68-a6f6-1f55de72a583",
       "name": "Create Notion blocks"
@@ -310,8 +310,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        1344,
-        432
+        1280,
+        624
       ],
       "id": "89d717fc-4cbb-480b-b80c-012e99fcc034",
       "name": "Create Asana Task"
@@ -325,8 +325,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1024,
-        640
+        880,
+        528
       ],
       "id": "8da77074-2ecc-4fec-a73d-eebd4ff33596",
       "name": "Sticky Note1"
@@ -340,8 +340,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1248,
-        336
+        1184,
+        528
       ],
       "id": "d12ec484-1b83-43ad-9d2f-a81f91890bd3",
       "name": "Sticky Note2"
@@ -355,11 +355,27 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        800,
-        912
+        576,
+        528
       ],
       "id": "03eef2cb-1682-4d9b-a746-7dcb8901e112",
       "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## AI meeting taker app\nThis workflow, join the meeting, create recape, create notion page and added blocks to it finally create tasks in asana and everything is based on what happens during the meeting.\n\nTo learn more about this you can watch the video here https://youtu.be/HfU7tacFelY",
+        "height": 1088,
+        "width": 1744,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -112
+      ],
+      "id": "8d076874-1a4c-419c-832d-c7152cc8f408",
+      "name": "Sticky Note"
     }
   ],
   "connections": {
