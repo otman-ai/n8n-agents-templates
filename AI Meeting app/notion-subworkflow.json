@@ -2,322 +2,6 @@
   "nodes": [
     {
       "parameters": {
-        "trigger": [
-          "app_mention"
-        ],
-        "watchWorkspace": true,
-        "options": {}
-      },
-      "type": "n8n-nodes-base.slackTrigger",
-      "typeVersion": 1,
-      "position": [
-        0,
-        0
-      ],
-      "id": "b5b024d4-1e94-412a-8dda-589eab0b1cfa",
-      "name": "Slack Trigger",
-      "webhookId": "00082d14-252f-4741-8e65-839dc81094ab",
-      "credentials": {
-        "slackApi": {
-          "id": "KLYzTPoOvE9m1mmM",
-          "name": "Slack account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $json.blocks[0].elements[0].elements[1].text }}",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3,
-      "position": [
-        208,
-        0
-      ],
-      "id": "46c5f215-3317-433e-9d3a-19604ea03e45",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        -48,
-        304
-      ],
-      "id": "2cd20c70-5af5-4446-b81e-cc0b82fe71fd",
-      "name": "Google Gemini Chat Model",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "i8fjVqBdlqh7Hm8E",
-          "name": "PAID TIER"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "select": "channel",
-        "channelId": {
-          "__rl": true,
-          "value": "={{ $('Slack Trigger').item.json.channel }}",
-          "mode": "id"
-        },
-        "text": "={{ $json.output }}",
-        "otherOptions": {}
-      },
-      "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.3,
-      "position": [
-        560,
-        0
-      ],
-      "id": "e3213d62-3447-493e-a554-e39e7de4537d",
-      "name": "Send a message",
-      "webhookId": "d284b6b4-1f6b-4028-83f8-ff6a35f61da4",
-      "credentials": {
-        "slackApi": {
-          "id": "KLYzTPoOvE9m1mmM",
-          "name": "Slack account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "={{ $('Slack Trigger').item.json.user }}"
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
-      "position": [
-        64,
-        416
-      ],
-      "id": "bae8516c-dc37-4543-abda-efa1b1a9e269",
-      "name": "Simple Memory"
-    },
-    {
-      "parameters": {
-        "toolDescription": "Launch the bot to join the meeting",
-        "method": "POST",
-        "url": "https://api.cloud.vexa.ai/bots",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "platform",
-              "value": "google_meet"
-            },
-            {
-              "name": "native_meeting_id",
-              "value": "={{ $fromAI('parameters1_Value', ``, 'string') }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequestTool",
-      "typeVersion": 4.3,
-      "position": [
-        176,
-        528
-      ],
-      "id": "4332a064-3716-4b86-a979-69b3833cae23",
-      "name": "Launch VEXA AI bot",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "7IGgu9cWP1FpaXzI",
-          "name": "Header Auth account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "toolDescription": "Delete the VEXAI Bot once the meeting is over",
-        "method": "DELETE",
-        "url": "=https://api.cloud.vexa.ai/bots/google_meet/{{ $fromAI('native_meeting_id', `The meeting id to delete`,`string`) }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequestTool",
-      "typeVersion": 4.3,
-      "position": [
-        464,
-        720
-      ],
-      "id": "7fa5c7f6-0379-4f89-abd8-8a0db426ab52",
-      "name": "Delete the VEXA AI Bot",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "7IGgu9cWP1FpaXzI",
-          "name": "Header Auth account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "toolDescription": "Get the meeting transcript",
-        "url": "=https://api.cloud.vexa.ai/transcripts/google_meet/{{ $fromAI('parameters1_Value', ``, 'string') }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequestTool",
-      "typeVersion": 4.3,
-      "position": [
-        304,
-        640
-      ],
-      "id": "b5557acb-bb45-4980-8f5f-e93b88f06a97",
-      "name": "Fetch the meeting transcript",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "7IGgu9cWP1FpaXzI",
-          "name": "Header Auth account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "description": "Call this to generate meeting recape from meeting transcript",
-        "workflowId": {
-          "__rl": true,
-          "value": "2WbE64U4QjQLXn9N",
-          "mode": "list",
-          "cachedResultName": "My Sub-Workflow 2",
-          "cachedResultUrl": "/workflow/2WbE64U4QjQLXn9N"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "transcript": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('transcript', ``, 'string') }}"
-          },
-          "matchingColumns": [
-            "transcript"
-          ],
-          "schema": [
-            {
-              "id": "transcript",
-              "displayName": "transcript",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        608,
-        528
-      ],
-      "id": "617842e7-69fd-4fd3-b070-867b837cb00e",
-      "name": "Generate meeting recap"
-    },
-    {
-      "parameters": {
-        "description": "Call to generate Notion blocks from the meeting recape, you can ask the user the customerName or the name of the page to create in notion",
-        "workflowId": {
-          "__rl": true,
-          "value": "Z8MlhdRy4UX94pLr",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/Z8MlhdRy4UX94pLr",
-          "cachedResultName": "My workflow"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "text",
-              "displayName": "text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "customerName",
-              "displayName": "customerName",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        736,
-        368
-      ],
-      "id": "30359b0f-cdd3-4d68-a6f6-1f55de72a583",
-      "name": "Create Notion blocks"
-    },
-    {
-      "parameters": {
-        "description": "Call this tool to create tasks in Asane from the meeting recape",
-        "workflowId": {
-          "__rl": true,
-          "value": "PjPZkKPT0OWYznue",
-          "mode": "list",
-          "cachedResultName": "My Sub-Workflow 3",
-          "cachedResultUrl": "/workflow/PjPZkKPT0OWYznue"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('text', ``, 'string') }}"
-          },
-          "matchingColumns": [
-            "text"
-          ],
-          "schema": [
-            {
-              "id": "text",
-              "displayName": "text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        864,
-        304
-      ],
-      "id": "89d717fc-4cbb-480b-b80c-012e99fcc034",
-      "name": "Create Asana Task"
-    },
-    {
-      "parameters": {
         "workflowInputs": {
           "values": [
             {
@@ -334,8 +18,8 @@
       "name": "When Executed by Another Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "position": [
-        -576,
-        1120
+        -528,
+        1184
       ]
     },
     {
@@ -346,8 +30,8 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        -224,
-        1328
+        -176,
+        1392
       ],
       "id": "3200b76a-4152-42b1-a836-d3269673bd12",
       "name": "Structured Output Parser"
@@ -369,8 +53,8 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        -368,
-        1120
+        -320,
+        1184
       ],
       "id": "c4ae6a2a-fb4c-44bc-ac49-33e7c6654455",
       "name": "Notion blocks"
@@ -388,8 +72,8 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        -16,
-        1120
+        32,
+        1184
       ],
       "id": "08cf69ed-3e1c-4946-8361-7dc024ea268d",
       "name": "Create a page",
@@ -407,8 +91,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        -480,
-        1328
+        -432,
+        1392
       ],
       "id": "c5339ffb-2024-4fb0-95e7-3a15a304c186",
       "name": "Google Gemini Chat Model1",
@@ -429,8 +113,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -640,
-        1008
+        -592,
+        1072
       ],
       "id": "558fa80a-76f9-4aec-96be-c6c8ec037d2d",
       "name": "Sticky Note"
@@ -458,8 +142,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        192,
-        1120
+        240,
+        1184
       ],
       "id": "bd423243-507e-4b62-9c7a-30500516ecf5",
       "name": "Create notion blocks",
@@ -469,160 +153,9 @@
           "name": "notion"
         }
       }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $json.transcript }}",
-        "messages": {
-          "messageValues": [
-            {
-              "message": "You are a helpful assistant, your job is to generate a recap from the provided meeting transcript, dont start with \"Of couse\", \"here is the reca\" or any sort of things, straight to the point.|NOTES: Use rich text no mardown"
-            }
-          ]
-        },
-        "batching": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chainLlm",
-      "typeVersion": 1.7,
-      "position": [
-        -144,
-        1920
-      ],
-      "id": "9788dbd5-84ef-44fc-b355-db07b70fad63",
-      "name": "Basic LLM Chain"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        -240,
-        2160
-      ],
-      "id": "3f8df1a2-cd0d-4a0f-b6fc-b48607f02257",
-      "name": "Google Gemini Chat Model2",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "i8fjVqBdlqh7Hm8E",
-          "name": "PAID TIER"
-        }
-      }
     }
   ],
   "connections": {
-    "Slack Trigger": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent": {
-      "main": [
-        [
-          {
-            "node": "Send a message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Simple Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Launch VEXA AI bot": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Delete the VEXA AI Bot": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Fetch the meeting transcript": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generate meeting recap": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Create Notion blocks": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Create Asana Task": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "When Executed by Another Workflow": {
       "main": [
         [
@@ -672,17 +205,6 @@
         [
           {
             "node": "Notion blocks",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model2": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Basic LLM Chain",
             "type": "ai_languageModel",
             "index": 0
           }
