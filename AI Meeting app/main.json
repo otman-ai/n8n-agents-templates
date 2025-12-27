@@ -1,0 +1,481 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "trigger": [
+          "app_mention"
+        ],
+        "watchWorkspace": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        48,
+        64
+      ],
+      "id": "b5b024d4-1e94-412a-8dda-589eab0b1cfa",
+      "name": "Slack Trigger",
+      "webhookId": "00082d14-252f-4741-8e65-839dc81094ab",
+      "credentials": {
+        "slackApi": {
+          "id": "KLYzTPoOvE9m1mmM",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.blocks[0].elements[0].elements[1].text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        256,
+        64
+      ],
+      "id": "46c5f215-3317-433e-9d3a-19604ea03e45",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        0,
+        368
+      ],
+      "id": "2cd20c70-5af5-4446-b81e-cc0b82fe71fd",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i8fjVqBdlqh7Hm8E",
+          "name": "PAID TIER"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('Slack Trigger').item.json.channel }}",
+          "mode": "id"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        64
+      ],
+      "id": "e3213d62-3447-493e-a554-e39e7de4537d",
+      "name": "Send a message",
+      "webhookId": "d284b6b4-1f6b-4028-83f8-ff6a35f61da4",
+      "credentials": {
+        "slackApi": {
+          "id": "KLYzTPoOvE9m1mmM",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Slack Trigger').item.json.user }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        480
+      ],
+      "id": "bae8516c-dc37-4543-abda-efa1b1a9e269",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Launch the bot to join the meeting",
+        "method": "POST",
+        "url": "https://api.cloud.vexa.ai/bots",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "platform",
+              "value": "google_meet"
+            },
+            {
+              "name": "native_meeting_id",
+              "value": "={{ $fromAI('parameters1_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        592
+      ],
+      "id": "4332a064-3716-4b86-a979-69b3833cae23",
+      "name": "Launch VEXA AI bot",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "7IGgu9cWP1FpaXzI",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Delete the VEXAI Bot once the meeting is over",
+        "method": "DELETE",
+        "url": "=https://api.cloud.vexa.ai/bots/google_meet/{{ $fromAI('native_meeting_id', `The meeting id to delete`,`string`) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        512,
+        784
+      ],
+      "id": "7fa5c7f6-0379-4f89-abd8-8a0db426ab52",
+      "name": "Delete the VEXA AI Bot",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "7IGgu9cWP1FpaXzI",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the meeting transcript",
+        "url": "=https://api.cloud.vexa.ai/transcripts/google_meet/{{ $fromAI('parameters1_Value', ``, 'string') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        352,
+        704
+      ],
+      "id": "b5557acb-bb45-4980-8f5f-e93b88f06a97",
+      "name": "Fetch the meeting transcript",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "7IGgu9cWP1FpaXzI",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this to generate meeting recape from meeting transcript",
+        "workflowId": {
+          "__rl": true,
+          "value": "2WbE64U4QjQLXn9N",
+          "mode": "list",
+          "cachedResultName": "My Sub-Workflow 2",
+          "cachedResultUrl": "/workflow/2WbE64U4QjQLXn9N"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "transcript": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('transcript', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "transcript"
+          ],
+          "schema": [
+            {
+              "id": "transcript",
+              "displayName": "transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        1040
+      ],
+      "id": "617842e7-69fd-4fd3-b070-867b837cb00e",
+      "name": "Generate meeting recap"
+    },
+    {
+      "parameters": {
+        "description": "Call to generate Notion blocks from the meeting recape, you can ask the user the customerName or the name of the page to create in notion",
+        "workflowId": {
+          "__rl": true,
+          "value": "Z8MlhdRy4UX94pLr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Z8MlhdRy4UX94pLr",
+          "cachedResultName": "My workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "customerName",
+              "displayName": "customerName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        768
+      ],
+      "id": "30359b0f-cdd3-4d68-a6f6-1f55de72a583",
+      "name": "Create Notion blocks"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to create tasks in Asane from the meeting recape",
+        "workflowId": {
+          "__rl": true,
+          "value": "PjPZkKPT0OWYznue",
+          "mode": "list",
+          "cachedResultName": "My Sub-Workflow 3",
+          "cachedResultUrl": "/workflow/PjPZkKPT0OWYznue"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('text', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "text"
+          ],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        432
+      ],
+      "id": "89d717fc-4cbb-480b-b80c-012e99fcc034",
+      "name": "Create Asana Task"
+    },
+    {
+      "parameters": {
+        "content": "## Notion subworkflow\n\nYou can find it [here](https://github.com/otman-ai/n8n-agents-templates/blob/main/AI%20Meeting%20app/notion-subworkflow.json)",
+        "height": 240,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        640
+      ],
+      "id": "8da77074-2ecc-4fec-a73d-eebd4ff33596",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Create Asana tasks\n\nYou can find the workflow [here](https://github.com/otman-ai/n8n-agents-templates/blob/main/AI%20Meeting%20app/create-asan-tasks.json)",
+        "height": 240,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        336
+      ],
+      "id": "d12ec484-1b83-43ad-9d2f-a81f91890bd3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Create meeting recape\n\nYou can find it [here](https://github.com/otman-ai/n8n-agents-templates/blob/main/AI%20Meeting%20app/create-recape.json)",
+        "height": 240,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        800,
+        912
+      ],
+      "id": "03eef2cb-1682-4d9b-a746-7dcb8901e112",
+      "name": "Sticky Note3"
+    }
+  ],
+  "connections": {
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Launch VEXA AI bot": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete the VEXA AI Bot": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch the meeting transcript": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate meeting recap": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Notion blocks": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Asana Task": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "bca60492606e67bb56468093fc75425ac3d20b14abf07d82bf2394c609c37d26"
+  }
+}
