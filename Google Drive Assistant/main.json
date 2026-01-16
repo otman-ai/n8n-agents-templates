@@ -1,0 +1,269 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -384,
+        32
+      ],
+      "id": "2367fb53-69de-4844-aa2f-0cc405af5f01",
+      "name": "When chat message received",
+      "webhookId": "a5edc678-2c69-47f4-ae5f-de55735cc7ea"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an AI agent that works with Google Drive through an external system that executes Google Drive API v3 queries and returns results to you."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -96,
+        -16
+      ],
+      "id": "952193ed-05ab-4b9a-8244-6a54f8c4ed4e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        192
+      ],
+      "id": "a2621234-512c-4864-b37d-61e340c05655",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i8fjVqBdlqh7Hm8E",
+          "name": "PAID TIER"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "=.",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        16,
+        304
+      ],
+      "id": "8b71bfcf-3a5b-43ab-89c3-c88a161e27f0",
+      "name": "List all the content",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8mnuw4fqckmYk0x2",
+          "name": "Mehdi Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Check the folder content",
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "='{{ $fromAI('FOLDER_ID', `The id of the folder to check`, 'string') }}' in parents and trashed=false"
+            },
+            {
+              "name": "fields",
+              "value": "files(id,name,mimeType,size,modifiedTime)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        240,
+        192
+      ],
+      "id": "98fb6988-eb3d-4824-8c9b-e3a8fdfbb660",
+      "name": "Check a folder content",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8mnuw4fqckmYk0x2",
+          "name": "Mehdi Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Query', ``, 'string') }}",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        96,
+        272
+      ],
+      "id": "c9b2e832-3ef5-4ff3-a17f-4028c268cb39",
+      "name": "Check  folder if exists",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8mnuw4fqckmYk0x2",
+          "name": "Mehdi Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to Read file content from the ID",
+        "workflowId": {
+          "__rl": true,
+          "value": "yLOeXjOaRdaYOleZ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/yLOeXjOaRdaYOleZ",
+          "cachedResultName": "My Sub-Workflow 4"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "FILE_ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('FILE_ID', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "FILE_ID"
+          ],
+          "schema": [
+            {
+              "id": "FILE_ID",
+              "displayName": "FILE_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        336
+      ],
+      "id": "7acee24f-3435-4a07-bf84-eee5628bfa25",
+      "name": "Call 'My Sub-Workflow 4'"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        192
+      ],
+      "id": "b4a8d279-e1bd-40b9-bf67-8b7a26d0be56",
+      "name": "Simple Memory"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List all the content": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check a folder content": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check  folder if exists": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'My Sub-Workflow 4'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bca60492606e67bb56468093fc75425ac3d20b14abf07d82bf2394c609c37d26"
+  }
+}
