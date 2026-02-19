@@ -1,0 +1,197 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        336,
+        0
+      ],
+      "id": "acb4c878-3182-4c8b-9fd1-3830df09f3c8",
+      "name": "WhatsApp Trigger",
+      "webhookId": "90b9a3ff-15a9-4d2d-b02c-34a6a71dade3",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "mjQ0s5Cp7bXmNiW1",
+          "name": "WhatsApp OAuth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1041403592383278",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        0
+      ],
+      "id": "512a7214-1cde-4ed3-a154-1fb30eb2e46c",
+      "name": "Send message",
+      "webhookId": "048a1651-9432-49ef-8be6-1a0dacbf08fc",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YLrrTsacuFVDWKwX",
+          "name": "WhatsApp account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=You are a helpful assistant at MC Restaurant, your job is to handle the users queries,  when the user booked, send his details to slack, all you need is his name and date of booking.\n\nToday is {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        544,
+        0
+      ],
+      "id": "bfa616ff-5e6e-41ca-a8b1-8a7076307b0d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        400,
+        208
+      ],
+      "id": "65b4266c-b6df-41e1-b424-8c024a2adc1a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i8fjVqBdlqh7Hm8E",
+          "name": "PAID TIER"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.messages[0].from }}",
+        "collectionName": "memory",
+        "databaseName": "messages"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
+      "typeVersion": 1,
+      "position": [
+        544,
+        240
+      ],
+      "id": "c071f953-baa5-4795-bbaa-08181d51ecaa",
+      "name": "MongoDB Chat Memory",
+      "credentials": {
+        "mongoDb": {
+          "id": "nkgXhUK4yYAtO5aE",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_Text', ``, 'string') }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slackTool",
+      "typeVersion": 2.4,
+      "position": [
+        720,
+        272
+      ],
+      "id": "697eef74-f1f6-4db8-99b8-0e94686665ae",
+      "name": "Send a message in Slack",
+      "webhookId": "1702a3dd-d682-49e8-b2e8-f881fc13e6d1",
+      "credentials": {
+        "slackApi": {
+          "id": "KLYzTPoOvE9m1mmM",
+          "name": "Slack account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Slack": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "bca60492606e67bb56468093fc75425ac3d20b14abf07d82bf2394c609c37d26"
+  }
+}
