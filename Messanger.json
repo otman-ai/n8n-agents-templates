@@ -130,8 +130,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        480,
-        352
+        672,
+        336
       ],
       "id": "4b973213-9202-43d3-9b26-879bcbf4cb85",
       "name": "AI Agent"
@@ -157,43 +157,6 @@
     },
     {
       "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "={{ $json.messages[0].from }}",
-        "collectionName": "memory",
-        "databaseName": "messages"
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
-      "typeVersion": 1,
-      "position": [
-        432,
-        608
-      ],
-      "id": "fd08387e-5487-41ea-99a2-241d67c394bd",
-      "name": "MongoDB Chat Memory"
-    },
-    {
-      "parameters": {
-        "select": "channel",
-        "channelId": {
-          "__rl": true,
-          "value": "",
-          "mode": "id"
-        },
-        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_Text', ``, 'string') }}",
-        "otherOptions": {}
-      },
-      "type": "n8n-nodes-base.slackTool",
-      "typeVersion": 2.4,
-      "position": [
-        592,
-        624
-      ],
-      "id": "9b55d4b9-b44d-4180-b93a-ea1aec723afc",
-      "name": "Send a message in Slack",
-      "webhookId": "1702a3dd-d682-49e8-b2e8-f881fc13e6d1"
-    },
-    {
-      "parameters": {
         "method": "POST",
         "url": "=https://graph.facebook.com/v25.0/{{ $('Webhook for retrieving the message').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
         "sendQuery": true,
@@ -207,14 +170,14 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('Webhook for retrieving the message').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"messaging_type\": \"RESPONSE\",\n  \"message\": {\n    \"text\": \"{{ $json.output.removeMarkdown() }}\"\n  }\n} ",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('Webhook for retrieving the message').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"messaging_type\": \"RESPONSE\",\n  \"message\": {\n    \"text\": \"{{ $json.output }}\"\n  }\n} ",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        816,
-        352
+        1136,
+        336
       ],
       "id": "bef19a18-6c32-4a82-b1e7-cd8a5d92173c",
       "name": "Respond"
@@ -226,7 +189,7 @@
             {
               "id": "6e11ca12-3839-4b6e-898a-70db7605c802",
               "name": "access_token",
-              "value": "",
+              "value": "<>",
               "type": "string"
             }
           ]
@@ -236,11 +199,68 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        272,
-        352
+        480,
+        336
       ],
       "id": "7a15a73e-01b5-4432-b326-da9d01683dbf",
       "name": "set Access token"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "06340ce8-c5d7-4e15-9c7b-0bb14e218031",
+              "leftValue": "={{ $('Webhook for retrieving the message').item.json.body.entry[0].messaging[0].message}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        272,
+        352
+      ],
+      "id": "9cbc644a-7d00-4a6f-a3ba-51abf2767780",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "870807ee-0c20-4476-a077-1c18b80182e0",
+              "name": "output",
+              "value": "={{ $json.output.split(\"\\n\").filter(item => item !== \"\").join(\" \") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        336
+      ],
+      "id": "2a7f7e51-49dd-4011-9eba-a7f954ff1e60",
+      "name": "Edit message"
     }
   ],
   "connections": {
@@ -281,7 +301,7 @@
       "main": [
         [
           {
-            "node": "set Access token",
+            "node": "If",
             "type": "main",
             "index": 0
           }
@@ -292,7 +312,7 @@
       "main": [
         [
           {
-            "node": "Respond",
+            "node": "Edit message",
             "type": "main",
             "index": 0
           }
@@ -310,28 +330,6 @@
         ]
       ]
     },
-    "MongoDB Chat Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send a message in Slack": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "set Access token": {
       "main": [
         [
@@ -342,9 +340,78 @@
           }
         ]
       ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "set Access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit message": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
+  "pinData": {
+    "Webhook for retrieving the message": [
+      {
+        "headers": {
+          "host": "0c0f-105-67-131-29.ngrok-free.app",
+          "user-agent": "facebookexternalua",
+          "content-length": "319",
+          "accept": "*/*",
+          "accept-encoding": "deflate, gzip",
+          "content-type": "application/json",
+          "facebook-api-version": "v24.0",
+          "x-forwarded-for": "2a03:2880:12ff:6::",
+          "x-forwarded-host": "0c0f-105-67-131-29.ngrok-free.app",
+          "x-forwarded-proto": "https",
+          "x-hub-signature": "sha1=7d4a133eb6731f16e3dddcf8a6827f7b61665f7f",
+          "x-hub-signature-256": "sha256=83d329ce276199b5cdede0eaef863ecdea0f1dd2b43e958fe725c40f70be8f00"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "object": "page",
+          "entry": [
+            {
+              "time": 1772226650417,
+              "id": "935839222953474",
+              "messaging": [
+                {
+                  "sender": {
+                    "id": "24333235393041282"
+                  },
+                  "recipient": {
+                    "id": "935839222953474"
+                  },
+                  "timestamp": 1772226649716,
+                  "message": {
+                    "mid": "m_kIetmf1G9LE7MV9kRosqiMZtuCIMBn_TtkxeFcwWIDMeDONiTnXXloc7SzWQCGNm9Ftt4wfWLBxM1ittX8XJZg",
+                    "text": "Want to book"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "webhookUrl": "http://localhost:5678/webhook/228d830f-6001-4995-859d-5b510ed39db3",
+        "executionMode": "production"
+      }
+    ]
+  },
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "009a8023d57aa3619f1addda15bbc8dfdb4342b3f45c82cf5166d0bf5f7fa789"
