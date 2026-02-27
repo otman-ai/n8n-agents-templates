@@ -1,0 +1,352 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('Webhook for verification').item.json.query[\"hub.challenge\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        752,
+        112
+      ],
+      "id": "a94287c6-dc7b-4989-9374-696bfa9f0cb9",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "783d718c-4e5d-457b-9107-274d9e13fd77",
+              "leftValue": "={{ $json.verify_token }}",
+              "rightValue": "={{ $('Webhook for verification').item.json.query[\"hub.verify_token\"] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        128
+      ],
+      "id": "e08ee6f1-d1db-4dd2-8f46-1c5526227d66",
+      "name": "Check the verify token"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b7a64334-98af-465e-8afe-348108497ea2",
+              "name": "verify_token",
+              "value": "token",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        128
+      ],
+      "id": "49c159d1-4198-4b33-bea2-0ff998f5b9e4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "path": "228d830f-6001-4995-859d-5b510ed39db3",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        128
+      ],
+      "id": "8d310a24-0cb7-408a-915f-880871870db7",
+      "name": "Webhook for verification",
+      "webhookId": "228d830f-6001-4995-859d-5b510ed39db3"
+    },
+    {
+      "parameters": {
+        "content": "## Verification workflow\n\nChnage the 'verfification token' to your own token, then copy the webhook url and past it in Meta configuration whatsappRun this before you hit \"Verify & save\" in Meta webhook",
+        "height": 320,
+        "width": 928,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "51af1ce5-8e68-46b3-abda-f9fbb4638d3b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "228d830f-6001-4995-859d-5b510ed39db3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        352
+      ],
+      "id": "382d63a9-cc3a-4f77-aff4-4cb28e756b1d",
+      "name": "Webhook for retrieving the message",
+      "webhookId": "8469f9ba-412c-41ff-9841-da1e5187bb97"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook for retrieving the message').item.json.body.entry[0].messaging[0].message.text }}",
+        "options": {
+          "systemMessage": "=You are a helpful assistant at MC Restaurant, your job is to handle the users queries,  when the user booked, send his details to slack, all you need is his name and date of booking.\n\nUse plain english no markdown\n\nToday is {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        480,
+        352
+      ],
+      "id": "4b973213-9202-43d3-9b26-879bcbf4cb85",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        560
+      ],
+      "id": "7ac10009-17bf-4d1f-afce-45d6c70d6489",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RwP1sDVS9rtUT8Ql",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.messages[0].from }}",
+        "collectionName": "memory",
+        "databaseName": "messages"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
+      "typeVersion": 1,
+      "position": [
+        432,
+        608
+      ],
+      "id": "fd08387e-5487-41ea-99a2-241d67c394bd",
+      "name": "MongoDB Chat Memory"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_Text', ``, 'string') }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slackTool",
+      "typeVersion": 2.4,
+      "position": [
+        592,
+        624
+      ],
+      "id": "9b55d4b9-b44d-4180-b93a-ea1aec723afc",
+      "name": "Send a message in Slack",
+      "webhookId": "1702a3dd-d682-49e8-b2e8-f881fc13e6d1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v25.0/{{ $('Webhook for retrieving the message').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $('set Access token').item.json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('Webhook for retrieving the message').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"messaging_type\": \"RESPONSE\",\n  \"message\": {\n    \"text\": \"{{ $json.output.removeMarkdown() }}\"\n  }\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        816,
+        352
+      ],
+      "id": "bef19a18-6c32-4a82-b1e7-cd8a5d92173c",
+      "name": "Respond"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6e11ca12-3839-4b6e-898a-70db7605c802",
+              "name": "access_token",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        352
+      ],
+      "id": "7a15a73e-01b5-4432-b326-da9d01683dbf",
+      "name": "set Access token"
+    }
+  ],
+  "connections": {
+    "Check the verify token": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Check the verify token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook for verification": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook for retrieving the message": {
+      "main": [
+        [
+          {
+            "node": "set Access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Slack": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set Access token": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "009a8023d57aa3619f1addda15bbc8dfdb4342b3f45c82cf5166d0bf5f7fa789"
+  }
+}
